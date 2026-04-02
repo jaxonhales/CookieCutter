@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookie Cutter Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Variables ─────────────────────────────────────────────────────────── */
+    :root {
+      --cream:   #f5f0e8;
+      --warm:    #ede5d5;
+      --paper:   #faf7f2;
+      --ink:     #1a1510;
+      --brown:   #6b4c2a;
+      --rust:    #c4622d;
+      --sage:    #7a8c6e;
+      --border:  #d4c9b5;
+      --shadow:  rgba(26, 21, 16, 0.12);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 10%, rgba(196,98,45,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(122,140,110,0.08) 0%, transparent 50%);
+    }
+
+    /* ── Header ────────────────────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 52px 24px 36px;
+      position: relative;
+    }
+
+    .header-rule {
+      width: 48px;
+      height: 2px;
+      background: var(--rust);
+      margin: 0 auto 20px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--ink);
+    }
+
+    header h1 span {
+      color: var(--rust);
+    }
+
+    header p {
+      margin-top: 14px;
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--brown);
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────────────────── */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Step indicator ────────────────────────────────────────────────────── */
+    .steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 40px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--border);
+      transition: color 0.3s;
+    }
+
+    .step.active { color: var(--rust); }
+    .step.done   { color: var(--sage); }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .step-line {
+      width: 48px;
+      height: 1px;
+      background: var(--border);
+      margin: 0 8px;
+    }
+
+    /* ── Cards ─────────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 36px;
+      box-shadow: 0 2px 12px var(--shadow);
+    }
+
+    .card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rust);
+      margin-bottom: 16px;
+    }
+
+    /* ── Upload zone ───────────────────────────────────────────────────────── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 4px;
+      padding: 56px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--rust);
+      background: rgba(196, 98, 45, 0.03);
+    }
+
+    .upload-icon {
+      font-size: 2.4rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .upload-zone h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .upload-zone p {
+      font-size: 0.88rem;
+      color: var(--brown);
+      font-weight: 300;
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 28px;
+      background: var(--ink);
+      color: var(--cream);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background 0.2s;
+      pointer-events: none; /* upload handled by input overlay */
+    }
+
+    .upload-zone:hover .upload-btn { background: var(--rust); }
+
+    /* ── Preview + Settings layout ─────────────────────────────────────────── */
+    #step2 { display: none; }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 700px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Canvas ────────────────────────────────────────────────────────────── */
+    .canvas-wrap {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .canvas-wrap canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .canvas-label {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--brown);
+      opacity: 0.6;
+    }
+
+    .shape-badge {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+
+    .shape-badge.closed { background: rgba(122,140,110,0.15); color: var(--sage); }
+    .shape-badge.open   { background: rgba(196,98,45,0.12);   color: var(--rust); }
+
+    /* ── Settings panel ────────────────────────────────────────────────────── */
+    .settings {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .setting-group {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-group:last-of-type { border-bottom: none; }
+
+    .setting-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .setting-value {
+      font-weight: 500;
+      color: var(--rust);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--rust);
+      cursor: pointer;
+    }
+
+    .setting-input {
+      width: 100%;
+      padding: 8px 12px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .setting-input:focus { border-color: var(--rust); }
+
+    .setting-hint {
+      font-size: 0.72rem;
+      color: var(--brown);
+      opacity: 0.7;
+      margin-top: 4px;
+    }
+
+    /* ── Generate button ───────────────────────────────────────────────────── */
+    .generate-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--rust);
+      color: white;
+      border: none;
+      border-radius: 2px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 20px;
+    }
+
+    .generate-btn:hover   { background: var(--brown); }
+    .generate-btn:active  { transform: scale(0.99); }
+    .generate-btn:disabled {
+      background: var(--border);
+      cursor: not-allowed;
+    }
+
+    /* ── Progress / status ─────────────────────────────────────────────────── */
+    .status-bar {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      display: none;
+    }
+
+    .status-bar.info    { background: rgba(122,140,110,0.12); color: var(--sage);  display: block; }
+    .status-bar.error   { background: rgba(196,98,45,0.12);   color: var(--rust);  display: block; }
+    .status-bar.loading { background: rgba(107,76,42,0.08);   color: var(--brown); display: block; }
+
+    .spinner {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border: 1.5px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Download section ──────────────────────────────────────────────────── */
+    #step3 { display: none; margin-top: 24px; }
+
+    .download-card {
+      background: var(--paper);
+      border: 1px solid var(--sage);
+      border-radius: 4px;
+      padding: 28px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .download-card .msg {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .download-card .sub {
+      font-size: 0.83rem;
+      color: var(--brown);
+      margin-top: 4px;
+    }
+
+    .download-btn {
+      padding: 12px 32px;
+      background: var(--sage);
+      color: white;
+      border: none;
+      border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover { background: #5a6e50; }
+
+    /* ── Divider ───────────────────────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+      position: relative;
+    }
+
+    .divider::after {
+      content: '✦';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--cream);
+      padding: 0 12px;
+      color: var(--border);
+      font-size: 0.7rem;
+    }
+
+    /* ── Tip box ───────────────────────────────────────────────────────────── */
+    .tips {
+      margin-top: 40px;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+    }
+
+    .tip h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .tip p {
+      font-size: 0.82rem;
+      color: var(--brown);
+      line-height: 1.6;
+    }
+
+    /* ── Animations ────────────────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp 0.4s ease both; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-rule"></div>
+  <h1>Cookie Cutter <span>Generator</span></h1>
+  <p>Draw a shape. Photograph it. Print it.</p>
+</header>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="ind-1">
+      <div class="step-num">1</div> Upload
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="ind-2">
+      <div class="step-num">2</div> Preview & Settings
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="ind-3">
+      <div class="step-num">3</div> Download STL
+    </div>
+  </div>
+
+  <!-- ── Step 1: Upload ───────────────────────────────────────────────────── -->
+  <div id="step1" class="card">
+    <div class="card-label">Step 1 — Upload your drawing</div>
+    <div class="upload-zone" id="dropZone">
+      <input type="file" id="fileInput" accept="image/*" />
+      <span class="upload-icon">✏️</span>
+      <h2>Drop your drawing here</h2>
+      <p>JPG, PNG, or BMP — a photo or scan of a sharpie drawing on white paper</p>
+      <span class="upload-btn">Choose file</span>
+    </div>
+    <div id="uploadStatus" class="status-bar"></div>
+  </div>
+
+  <!-- ── Step 2: Preview + Settings ─────────────────────────────────────────-->
+  <div id="step2">
+    <div class="divider"></div>
+    <div class="card fade-up">
+      <div class="card-label">Step 2 — Verify shape & adjust settings</div>
+      <div class="preview-grid">
+
+        <!-- Canvas preview -->
+        <div>
+          <div class="canvas-wrap">
+            <span class="canvas-label">Extracted centerline</span>
+            <span class="shape-badge" id="shapeBadge"></span>
+            <canvas id="previewCanvas" width="600" height="600"></canvas>
+          </div>
+          <p style="font-size:0.78rem; color:var(--brown); margin-top:10px; line-height:1.5">
+            The orange line shows the centerline extracted from your drawing.
+            If it looks wrong, try a cleaner photo with better lighting.
+          </p>
+        </div>
+
+        <!-- Settings -->
+        <div class="settings">
+          <div class="setting-group">
+            <div class="setting-label">
+              Wall height <span class="setting-value" id="val-height">50mm</span>
+            </div>
+            <input type="range" id="s-height" min="20" max="80" value="50" step="1"
+              oninput="document.getElementById('val-height').textContent=this.value+'mm'" />
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-label">
+              Wall thickness <span class="setting-value" id="val-wall">2.0mm</span>
+            </div>
+            <input type="range" id="s-wall" min="1" max="4" value="2" step="0.5"
+              oninput="document.getElementById('val-wall').textContent=this.value+'mm'" />
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-label">
+              Base flange width <span class="setting-value" id="val-flange">5mm</span>
+            </div>
+            <input type="range" id="s-flange" min="2" max="12" value="5" step="1"
+              oninput="document.getElementById('val-flange').textContent=this.value+'mm'" />
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-label">
+              Output size (longest side)
+            </div>
+            <input type="number" class="setting-input" id="s-size"
+              placeholder="e.g. 80  (mm)" min="20" max="300" />
+            <p class="setting-hint">Leave blank to use image DPI for scale</p>
+          </div>
+
+          <button class="generate-btn" id="generateBtn" onclick="generate()">
+            Generate STL →
+          </button>
+
+          <div id="generateStatus" class="status-bar"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Step 3: Download ─────────────────────────────────────────────────── -->
+  <div id="step3" class="fade-up">
+    <div class="download-card">
+      <div>
+        <div class="msg">🍪 Your cookie cutter is ready!</div>
+        <div class="sub">Open in Cura, PrusaSlicer, or Bambu Studio to slice and print.</div>
+      </div>
+      <a class="download-btn" id="downloadLink" href="#" download="cookie_cutter.stl">
+        ↓ Download STL
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Tips ────────────────────────────────────────────────────────────────-->
+  <div class="tips">
+    <div class="tip">
+      <h3>Best drawings</h3>
+      <p>Black sharpie on bright white paper. Bold lines, no sketchy strokes. Closed shapes make the best cutters.</p>
+    </div>
+    <div class="tip">
+      <h3>Best photos</h3>
+      <p>Even lighting, no shadows across the drawing. Camera parallel to the paper — avoid angled shots.</p>
+    </div>
+    <div class="tip">
+      <h3>Print settings</h3>
+      <p>PLA works great. 0.2mm layer height, 3+ perimeters for strong walls. No supports needed.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let currentFile = null;
+  let previewData = null;
+  let stlBlob     = null;
+
+  // ── Upload handling ────────────────────────────────────────────────────────
+  const dropZone  = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  });
+
+  function handleFile(file) {
+    currentFile = file;
+    setStatus('uploadStatus', 'loading', '⏳ Analyzing drawing…');
+    fetchPreview(file);
+  }
+
+  // ── Preview ────────────────────────────────────────────────────────────────
+  async function fetchPreview(file) {
+    const form = new FormData();
+    form.append('image', file);
+
+    try {
+      const res  = await fetch('/api/preview', { method: 'POST', body: form });
+      const data = await res.json();
+
+      if (data.error) {
+        setStatus('uploadStatus', 'error', '✗ ' + data.error);
+        return;
+      }
+
+      previewData = data;
+      setStatus('uploadStatus', 'info', `✓ Found ${data.num_points} spline points — shape looks ${data.is_closed ? 'closed ✓' : 'open'}`);
+      showStep2(data);
+
+    } catch (err) {
+      setStatus('uploadStatus', 'error', '✗ Network error: ' + err.message);
+    }
+  }
+
+  function showStep2(data) {
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('step3').style.display = 'none';
+
+    // Step indicators
+    document.getElementById('ind-1').classList.remove('active');
+    document.getElementById('ind-1').classList.add('done');
+    document.getElementById('ind-2').classList.add('active');
+
+    // Badge
+    const badge = document.getElementById('shapeBadge');
+    badge.textContent = data.is_closed ? 'Closed shape' : 'Open path';
+    badge.className   = 'shape-badge ' + (data.is_closed ? 'closed' : 'open');
+
+    // Draw on canvas
+    drawPreview(data);
+    document.getElementById('step2').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function drawPreview(data) {
+    const canvas = document.getElementById('previewCanvas');
+    const ctx    = canvas.getContext('2d');
+    const size   = 600;
+
+    // Set canvas dimensions respecting aspect ratio
+    const aspect = data.image_aspect || 1;
+    canvas.width  = size;
+    canvas.height = Math.round(size / aspect);
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const pad = 40;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = '#faf7f2';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid dots
+    ctx.fillStyle = '#e8e0d0';
+    for (let x = pad; x < W - pad; x += 24)
+      for (let y = pad; y < H - pad; y += 24)
+        ctx.fillRect(x, y, 1.5, 1.5);
+
+    // Map normalized points to canvas coords
+    const xs = data.points_x.map(v => pad + v * (W - pad * 2));
+    const ys = data.points_y.map(v => pad + v * (H - pad * 2));
+
+    // Shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(196,98,45,0.25)';
+    ctx.shadowBlur  = 8;
+    ctx.beginPath();
+    ctx.moveTo(xs[0], ys[0]);
+    for (let i = 1; i < xs.length; i++) ctx.lineTo(xs[i], ys[i]);
+    if (data.is_closed) ctx.closePath();
+    ctx.strokeStyle = '#c4622d';
+    ctx.lineWidth   = 2.5;
+    ctx.lineJoin    = 'round';
+    ctx.lineCap     = 'round';
+    ctx.stroke();
+    ctx.restore();
+
+    // Start point dot
+    ctx.beginPath();
+    ctx.arc(xs[0], ys[0], 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#c4622d';
+    ctx.fill();
+  }
+
+  // ── Generate STL ────────────────────────────────────────────────────────────
+  async function generate() {
+    if (!currentFile) return;
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    setStatus('generateStatus', 'loading', '<span class="spinner"></span>Building 3D geometry… this takes 30–60 seconds');
+
+    const form = new FormData();
+    form.append('image',          currentFile);
+    form.append('wall_height',    document.getElementById('s-height').value);
+    form.append('wall_thickness', document.getElementById('s-wall').value);
+    form.append('flange_width',   document.getElementById('s-flange').value);
+    form.append('flange_height',  '2.5');
+    form.append('force_size',     document.getElementById('s-size').value);
+
+    try {
+      const res = await fetch('/api/generate', { method: 'POST', body: form });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setStatus('generateStatus', 'error', '✗ ' + (data.error || 'Generation failed'));
+        btn.disabled = false;
+        return;
+      }
+
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+
+      document.getElementById('downloadLink').href = url;
+      document.getElementById('step3').style.display = 'block';
+
+      document.getElementById('ind-2').classList.remove('active');
+      document.getElementById('ind-2').classList.add('done');
+      document.getElementById('ind-3').classList.add('active');
+
+      setStatus('generateStatus', 'info', '✓ STL generated successfully');
+      document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (err) {
+      setStatus('generateStatus', 'error', '✗ ' + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function setStatus(id, type, msg) {
+    const el = document.getElementById(id);
+    el.className  = 'status-bar ' + type;
+    el.innerHTML  = msg;
+  }
+</script>
+
+</body>
+</html>

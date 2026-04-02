@@ -1,0 +1,13 @@
+# render.yaml — tells Render.com how to deploy this app
+# Just connect your GitHub repo to Render and it reads this file automatically.
+
+services:
+  - type: web
+    name: cookie-cutter-generator
+    runtime: python
+    buildCommand: "conda install -c conda-forge cadquery -y && pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --workers 2 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+    plan: free   # free tier — upgrade if you need faster builds
