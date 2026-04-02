@@ -5,7 +5,6 @@ Flask backend handling image processing, preview, and STL generation.
 
 import os
 import uuid
-import json
 import tempfile
 import traceback
 from pathlib import Path
@@ -129,12 +128,19 @@ def generate():
         save_stl(cutter, str(tmp_output))
         tmp_input.unlink(missing_ok=True)
 
-        return send_file(
+        response = send_file(
             str(tmp_output),
             as_attachment=True,
             download_name="cookie_cutter.stl",
             mimetype="application/octet-stream",
         )
+
+        # Schedule STL cleanup after response is sent
+        @response.call_on_close
+        def cleanup():
+            tmp_output.unlink(missing_ok=True)
+
+        return response
 
     except Exception as e:
         traceback.print_exc()
